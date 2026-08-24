@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BootBros | Boot Reason</title>
+
+  <link rel="stylesheet" href="/app.css">
+
+  <style>
+    .page {
+      min-height: 100vh;
+      background: #f5f7fa;
+    }
+
+    .header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: white;
+      border-bottom: 1px solid #e5e9ef;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #071b35;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #1557b0;
+      color: white;
+    }
+
+    .back {
+      color: #344054;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .main {
+      max-width: 850px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      color: #071b35;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      color: #667085;
+    }
+
+    .card {
+      margin-bottom: 20px;
+      padding: 26px;
+      background: white;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+    }
+
+    .vehicle-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .summary-item {
+      padding: 13px;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+
+    .label {
+      color: #667085;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .value {
+      margin-top: 4px;
+      color: #071b35;
+      font-weight: 800;
+    }
+
+    .reason-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .reason-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px;
+      border: 1px solid #d0d5dd;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .reason-option:hover {
+      border-color: #1557b0;
+      background: #f8fbff;
+    }
+
+    .reason-option input {
+      margin-top: 3px;
+    }
+
+    .reason-title {
+      color: #344054;
+      font-weight: 700;
+    }
+
+    .reason-description {
+      margin-top: 3px;
+      color: #667085;
+      font-size: 13px;
+    }
+
+    .citation-box {
+      margin-top: 20px;
+    }
+
+    .citation-box label {
+      display: block;
+      margin-bottom: 7px;
+      color: #344054;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .button {
+      margin-top: 20px;
+      padding: 13px 20px;
+      border: 0;
+      border-radius: 8px;
+      background: #1557b0;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .error {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      color: #b42318;
+      background: #fef3f2;
+    }
+
+    @media (max-width: 650px) {
+      .vehicle-summary {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <header class="header">
+
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      BootBros
+    </div>
+
+    <a
+      href="/new-boot.html"
+      class="back"
+    >
+      ← Vehicle Lookup
+    </a>
+
+  </header>
+
+  <main class="main">
+
+    <h1>Boot Reason</h1>
+
+    <div class="subtitle">
+      Select the authorized reason supporting
+      this immobilization.
+    </div>
+
+    <section class="card">
+
+      <h2>Vehicle</h2>
+
+      <div class="vehicle-summary">
+
+        <div class="summary-item">
+          <div class="label">Plate</div>
+          <div id="plate" class="value">—</div>
+        </div>
+
+        <div class="summary-item">
+          <div class="label">State</div>
+          <div id="state" class="value">—</div>
+        </div>
+
+        <div class="summary-item">
+          <div class="label">Vehicle</div>
+          <div id="vehicle" class="value">—</div>
+        </div>
+
+        <div class="summary-item">
+          <div class="label">Color</div>
+          <div id="color" class="value">—</div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="card">
+
+      <h2>Authorized Boot Reason</h2>
+
+      <div class="reason-list">
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="unpaid_parking_citations"
+          >
+
+          <div>
+            <div class="reason-title">
+              Unpaid parking citations
+            </div>
+
+            <div class="reason-description">
+              Outstanding parking citations
+              authorized for immobilization.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="unpaid_parking_fees"
+          >
+
+          <div>
+            <div class="reason-title">
+              Unpaid parking fees
+            </div>
+
+            <div class="reason-description">
+              Outstanding parking or lot fees.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="expired_meter_private_lot"
+          >
+
+          <div>
+            <div class="reason-title">
+              Expired meter time — private lot
+            </div>
+
+            <div class="reason-description">
+              Vehicle exceeded authorized parking
+              time in a private parking facility.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="unauthorized_private_property"
+          >
+
+          <div>
+            <div class="reason-title">
+              Unauthorized private-property parking
+            </div>
+
+            <div class="reason-description">
+              Parking without authorization where
+              immobilization is permitted.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="fire_lane"
+          >
+
+          <div>
+            <div class="reason-title">
+              Fire lane
+            </div>
+
+            <div class="reason-description">
+              Vehicle occupying a designated
+              fire lane.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="accessible_parking"
+          >
+
+          <div>
+            <div class="reason-title">
+              Accessible parking
+            </div>
+
+            <div class="reason-description">
+              Unauthorized parking in an accessible
+              parking space.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="loading_zone"
+          >
+
+          <div>
+            <div class="reason-title">
+              Loading zone
+            </div>
+
+            <div class="reason-description">
+              Vehicle occupying a restricted
+              loading zone.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="repeated_violations"
+          >
+
+          <div>
+            <div class="reason-title">
+              Repeated violations
+            </div>
+
+            <div class="reason-description">
+              Repeated violations after authorized
+              warnings or citations.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="expired_registration"
+          >
+
+          <div>
+            <div class="reason-title">
+              Expired registration
+            </div>
+
+            <div class="reason-description">
+              Use only where local law authorizes
+              immobilization for this reason.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="court_municipal_enforcement"
+          >
+
+          <div>
+            <div class="reason-title">
+              Court / municipal enforcement
+            </div>
+
+            <div class="reason-description">
+              Outstanding obligation subject to
+              authorized enforcement.
+            </div>
+          </div>
+        </label>
+
+        <label class="reason-option">
+          <input
+            type="radio"
+            name="reason"
+            value="other_authorized"
+          >
+
+          <div>
+            <div class="reason-title">
+              Other authorized reason
+            </div>
+
+            <div class="reason-description">
+              Use only when the organization has
+              specifically authorized the reason.
+            </div>
+          </div>
+        </label>
+
+      </div>
+
+      <div class="citation-box">
+
+        <label for="citations">
+          Supporting citation / violation numbers
+        </label>
+
+        <textarea
+          id="citations"
+          placeholder="Example: Citation #12345, #12346"
+        ></textarea>
+
+      </div>
+
+      <div
+        id="error"
+        class="error"
+      ></div>
+
+      <button
+        id="continue"
+        class="button"
+        disabled
+      >
+        Continue to Vehicle Verification →
+      </button>
+
+    </section>
+
+  </main>
+
+</div>
+
+<script>
+
+  const token =
+    sessionStorage.getItem("bootbros_token");
+
+  const vehicleJson =
+    sessionStorage.getItem("boot_vehicle");
+
+  if (!token || !vehicleJson) {
+    window.location.href = "/new-boot.html";
+  }
+
+  const data =
+    JSON.parse(vehicleJson);
+
+  const vehicle =
+    data.vehicle;
+
+  document.getElementById("plate")
+    .textContent =
+    vehicle.license_plate || "—";
+
+  document.getElementById("state")
+    .textContent =
+    vehicle.state || "—";
+
+  document.getElementById("vehicle")
+    .textContent =
+    `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "—";
+
+  document.getElementById("color")
+    .textContent =
+    vehicle.color || "—";
+
+  const continueButton =
+    document.getElementById("continue");
+
+  document
+    .querySelectorAll(
+      'input[name="reason"]'
+    )
+    .forEach(input => {
+
+      input.addEventListener(
+        "change",
+        () => {
+          continueButton.disabled = false;
+        }
+      );
+
+    });
+
+  continueButton.addEventListener(
+    "click",
+    () => {
+
+      const selected =
+        document.querySelector(
+          'input[name="reason"]:checked'
+        );
+
+      const citations =
+        document
+          .getElementById("citations")
+          .value
+          .trim();
+
+      if (!selected) {
+        return;
+      }
+
+      if (
+        selected.value ===
+          "unpaid_parking_citations" &&
+        !citations
+      ) {
+        const error =
+          document.getElementById("error");
+
+        error.textContent =
+          "Enter the supporting citation number(s).";
+
+        error.style.display = "block";
+
+        return;
+      }
+
+      sessionStorage.setItem(
+        "boot_reason",
+        JSON.stringify({
+          reason: selected.value,
+          citations
+        })
+      );
+
+      window.location.href =
+        "/boot-verification.html";
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
