@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BootBros | Dashboard</title>
+
+  <link rel="stylesheet" href="/app.css">
+
+  <style>
+    body {
+      min-height: 100vh;
+    }
+
+    .dashboard {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e9ef;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .topbar-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #1557b0;
+      color: white;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .topbar-title {
+      color: #071b35;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-name {
+      color: #344054;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .logout-button {
+      border: 1px solid #d0d5dd;
+      background: white;
+      color: #344054;
+      border-radius: 8px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .logout-button:hover {
+      background: #f8fafc;
+    }
+
+    .dashboard-body {
+      flex: 1;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 230px;
+      padding: 24px 14px;
+      background: #071b35;
+      color: white;
+    }
+
+    .sidebar-section {
+      margin: 0 10px 10px;
+      color: #8da3c0;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-item {
+      display: block;
+      width: 100%;
+      margin-bottom: 4px;
+      padding: 12px 13px;
+      border-radius: 8px;
+      color: #dce7f5;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      color: white;
+      background: #1557b0;
+    }
+
+    .main {
+      flex: 1;
+      padding: 32px;
+      overflow: auto;
+    }
+
+    .page-title {
+      margin-bottom: 28px;
+    }
+
+    .page-title h1 {
+      margin: 0 0 6px;
+      color: #071b35;
+      font-size: 28px;
+    }
+
+    .page-title p {
+      margin: 0;
+      color: #667085;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      padding: 22px;
+      background: white;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+      box-shadow:
+        0 5px 18px rgba(7, 27, 53, 0.05);
+    }
+
+    .stat-label {
+      color: #667085;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      color: #071b35;
+      font-size: 31px;
+      font-weight: 800;
+    }
+
+    .section-card {
+      background: white;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 19px 22px;
+      border-bottom: 1px solid #edf0f4;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      color: #071b35;
+      font-size: 17px;
+    }
+
+    .section-header span {
+      color: #667085;
+      font-size: 13px;
+    }
+
+    .activity {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .activity th,
+    .activity td {
+      padding: 15px 22px;
+      text-align: left;
+      border-bottom: 1px solid #f0f2f5;
+      font-size: 14px;
+    }
+
+    .activity th {
+      color: #667085;
+      background: #fafbfc;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .activity td {
+      color: #344054;
+    }
+
+    .status {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status.booted {
+      color: #9a3412;
+      background: #fff0e6;
+    }
+
+    .status.removal {
+      color: #175cd3;
+      background: #eff8ff;
+    }
+
+    .status.removed {
+      color: #027a48;
+      background: #ecfdf3;
+    }
+
+    .new-boot {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 16px;
+      color: white;
+      background: #ff7a00;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .new-boot:hover {
+      background: #e96d00;
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        width: 70px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .sidebar-section {
+        display: none;
+      }
+
+      .nav-item {
+        text-align: center;
+        font-size: 0;
+      }
+
+      .nav-item::first-letter {
+        font-size: 20px;
+      }
+
+      .main {
+        padding: 22px 16px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .user-name {
+        display: none;
+      }
+
+      .activity th:nth-child(3),
+      .activity td:nth-child(3) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="dashboard">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <div class="topbar-mark">B</div>
+        <div class="topbar-title">BootBros</div>
+      </div>
+
+      <div class="topbar-user">
+
+        <span
+          id="userName"
+          class="user-name"
+        >
+          Administrator
+        </span>
+
+        <button
+          id="logoutButton"
+          class="logout-button"
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </header>
+
+    <div class="dashboard-body">
+
+      <aside class="sidebar">
+
+        <div class="sidebar-section">
+          Operations
+        </div>
+
+        <a
+          class="nav-item active"
+          href="/dashboard.html"
+        >
+          Dashboard
+        </a>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Vehicles
+        </a>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Start New Boot
+        </a>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Active Boots
+        </a>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Removal Requests
+        </a>
+
+        <div class="sidebar-section">
+          Management
+        </div>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Technicians
+        </a>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Calls
+        </a>
+
+        <a
+          class="nav-item"
+          href="#"
+        >
+          Settings
+        </a>
+
+      </aside>
+
+      <main class="main">
+
+        <div class="page-title">
+
+          <h1 id="welcomeTitle">
+            Good morning
+          </h1>
+
+          <p>
+            Here's what's happening with BootBros today.
+          </p>
+
+        </div>
+
+        <section class="stats">
+
+          <div class="stat-card">
+            <div class="stat-label">
+              Active Boots
+            </div>
+
+            <div
+              id="activeBoots"
+              class="stat-value"
+            >
+              —
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              Removal Requests
+            </div>
+
+            <div
+              id="removalRequests"
+              class="stat-value"
+            >
+              —
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              Today's Boots
+            </div>
+
+            <div
+              id="todaysBoots"
+              class="stat-value"
+            >
+              —
+            </div>
+          </div>
+
+        </section>
+
+        <section class="section-card">
+
+          <div class="section-header">
+
+            <h2>
+              Recent Activity
+            </h2>
+
+            <button
+              class="new-boot"
+              onclick="startNewBoot()"
+            >
+              + Start New Boot
+            </button>
+
+          </div>
+
+          <table class="activity">
+
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Activity</th>
+                <th>Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr>
+                <td>BOOT123</td>
+                <td>Boot installed</td>
+                <td>10:42 AM</td>
+                <td>
+                  <span class="status booted">
+                    Active
+                  </span>
+                </td>
+              </tr>
+
+              <tr>
+                <td>ABC123</td>
+                <td>Removal requested</td>
+                <td>10:31 AM</td>
+                <td>
+                  <span class="status removal">
+                    Requested
+                  </span>
+                </td>
+              </tr>
+
+              <tr>
+                <td>XYZ789</td>
+                <td>Boot removed</td>
+                <td>09:55 AM</td>
+                <td>
+                  <span class="status removed">
+                    Completed
+                  </span>
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    const token =
+      sessionStorage.getItem("bootbros_token");
+
+    const userJson =
+      sessionStorage.getItem("bootbros_user");
+
+    if (!token || !userJson) {
+      window.location.href = "/";
+    }
+
+    const user = JSON.parse(userJson);
+
+    const fullName =
+      `${user.first_name} ${user.last_name}`;
+
+    document.getElementById(
+      "userName"
+    ).textContent = fullName;
+
+    document.getElementById(
+      "welcomeTitle"
+    ).textContent = `Welcome, ${user.first_name}`;
+
+    document.getElementById(
+      "logoutButton"
+    ).addEventListener("click", () => {
+
+      sessionStorage.removeItem(
+        "bootbros_token"
+      );
+
+      sessionStorage.removeItem(
+        "bootbros_user"
+      );
+
+      sessionStorage.removeItem(
+        "bootbros_organization"
+      );
+
+      window.location.href = "/";
+
+    });
+
+    function startNewBoot() {
+      alert(
+        "The technician boot workflow is our next module."
+      );
+    }
+
+  </script>
+
+</body>
+</html>
