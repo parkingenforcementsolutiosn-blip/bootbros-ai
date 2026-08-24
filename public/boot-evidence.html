@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BootBros | Evidence</title>
+
+  <link rel="stylesheet" href="/app.css">
+
+  <style>
+    .page {
+      min-height: 100vh;
+      background: #f5f7fa;
+    }
+
+    .header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: white;
+      border-bottom: 1px solid #e5e9ef;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #071b35;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1557b0;
+      color: white;
+      border-radius: 10px;
+    }
+
+    .back {
+      color: #344054;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .main {
+      max-width: 900px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      color: #071b35;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      color: #667085;
+    }
+
+    .card {
+      margin-bottom: 20px;
+      padding: 26px;
+      background: white;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #071b35;
+      font-size: 18px;
+    }
+
+    .evidence-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .evidence-item {
+      padding: 18px;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+    }
+
+    .evidence-title {
+      margin-bottom: 5px;
+      color: #344054;
+      font-weight: 800;
+    }
+
+    .required {
+      color: #b42318;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .description {
+      margin-bottom: 12px;
+      color: #667085;
+      font-size: 13px;
+    }
+
+    .photo-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px dashed #98a2b3;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .preview {
+      display: none;
+      width: 180px;
+      max-height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #d0d5dd;
+    }
+
+    .status {
+      margin-top: 8px;
+      color: #667085;
+      font-size: 12px;
+    }
+
+    .location-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+    }
+
+    .button {
+      margin-top: 20px;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 8px;
+      background: #1557b0;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 8px;
+      background: #fef3f2;
+      color: #b42318;
+    }
+
+    @media (max-width: 650px) {
+      .location-box {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <header class="header">
+
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      BootBros
+    </div>
+
+    <a
+      href="/boot-verification.html"
+      class="back"
+    >
+      ← Vehicle Verification
+    </a>
+
+  </header>
+
+  <main class="main">
+
+    <h1>Capture Evidence</h1>
+
+    <div class="subtitle">
+      Capture the required evidence before
+      confirming the boot installation.
+    </div>
+
+    <section class="card">
+
+      <h2>Required Photos</h2>
+
+      <div class="evidence-list">
+
+        <div class="evidence-item">
+          <div class="evidence-title">
+            1. Front of Vehicle
+            <span class="required">REQUIRED</span>
+          </div>
+
+          <div class="description">
+            Capture the front of the vehicle clearly.
+          </div>
+
+          <input
+            type="file"
+            id="front_photo"
+            accept="image/*"
+            capture="environment"
+          >
+
+          <img
+            id="front_preview"
+            class="preview"
+          >
+
+          <div
+            id="front_status"
+            class="status"
+          >
+            No photo selected
+          </div>
+        </div>
+
+
+        <div class="evidence-item">
+          <div class="evidence-title">
+            2. Rear / License Plate
+            <span class="required">REQUIRED</span>
+          </div>
+
+          <div class="description">
+            Capture the rear and license plate clearly.
+          </div>
+
+          <input
+            type="file"
+            id="rear_photo"
+            accept="image/*"
+            capture="environment"
+          >
+
+          <img
+            id="rear_preview"
+            class="preview"
+          >
+
+          <div
+            id="rear_status"
+            class="status"
+          >
+            No photo selected
+          </div>
+        </div>
+
+
+        <div class="evidence-item">
+          <div class="evidence-title">
+            3. Overall Vehicle Position
+            <span class="required">REQUIRED</span>
+          </div>
+
+          <div class="description">
+            Show how the vehicle is positioned
+            within the parking area.
+          </div>
+
+          <input
+            type="file"
+            id="overall_photo"
+            accept="image/*"
+            capture="environment"
+          >
+
+          <img
+            id="overall_preview"
+            class="preview"
+          >
+
+          <div
+            id="overall_status"
+            class="status"
+          >
+            No photo selected
+          </div>
+        </div>
+
+
+        <div class="evidence-item">
+          <div class="evidence-title">
+            4. Boot Installed
+            <span class="required">REQUIRED</span>
+          </div>
+
+          <div class="description">
+            Show the boot installed on the vehicle.
+          </div>
+
+          <input
+            type="file"
+            id="boot_photo"
+            accept="image/*"
+            capture="environment"
+          >
+
+          <img
+            id="boot_preview"
+            class="preview"
+          >
+
+          <div
+            id="boot_status"
+            class="status"
+          >
+            No photo selected
+          </div>
+        </div>
+
+
+        <div class="evidence-item">
+          <div class="evidence-title">
+            5. Boot / Wheel Close-Up
+            <span class="required">REQUIRED</span>
+          </div>
+
+          <div class="description">
+            Capture a clear close-up showing the boot
+            and wheel.
+          </div>
+
+          <input
+            type="file"
+            id="closeup_photo"
+            accept="image/*"
+            capture="environment"
+          >
+
+          <img
+            id="closeup_preview"
+            class="preview"
+          >
+
+          <div
+            id="closeup_status"
+            class="status"
+          >
+            No photo selected
+          </div>
+        </div>
+
+
+        <div class="evidence-item">
+          <div class="evidence-title">
+            6. Parking / Signage
+            <span class="required">REQUIRED</span>
+          </div>
+
+          <div class="description">
+            Capture applicable parking signs,
+            restrictions, or lot signage.
+          </div>
+
+          <input
+            type="file"
+            id="signage_photo"
+            accept="image/*"
+            capture="environment"
+          >
+
+          <img
+            id="signage_preview"
+            class="preview"
+          >
+
+          <div
+            id="signage_status"
+            class="status"
+          >
+            No photo selected
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="card">
+
+      <h2>Installation Location</h2>
+
+      <div class="location-box">
+
+        <div class="field">
+          <label>LATITUDE</label>
+
+          <input
+            id="latitude"
+            readonly
+            placeholder="Getting location..."
+          >
+        </div>
+
+        <div class="field">
+          <label>LONGITUDE</label>
+
+          <input
+            id="longitude"
+            readonly
+            placeholder="Getting location..."
+          >
+        </div>
+
+      </div>
+
+      <button
+        id="location_button"
+        class="button"
+        type="button"
+      >
+        Get Current Location
+      </button>
+
+    </section>
+
+
+    <section class="card">
+
+      <h2>Evidence Confirmation</h2>
+
+      <label>
+        <input
+          type="checkbox"
+          id="evidence_confirmed"
+        >
+
+        I confirm that the required evidence has
+        been captured and is clear enough to support
+        the boot record.
+      </label>
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+      <button
+        id="continue"
+        class="button"
+        disabled
+      >
+        Continue to Boot Information →
+      </button>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  const token =
+    sessionStorage.getItem("bootbros_token");
+
+  const vehicleJson =
+    sessionStorage.getItem("boot_vehicle");
+
+  const reasonJson =
+    sessionStorage.getItem("boot_reason");
+
+  const verificationJson =
+    sessionStorage.getItem("boot_verification");
+
+  if (
+    !token ||
+    !vehicleJson ||
+    !reasonJson ||
+    !verificationJson
+  ) {
+    window.location.href =
+      "/new-boot.html";
+  }
+
+
+  const requiredPhotos = [
+    "front_photo",
+    "rear_photo",
+    "overall_photo",
+    "boot_photo",
+    "closeup_photo",
+    "signage_photo"
+  ];
+
+
+  const photoState = {};
+
+
+  function setupPhoto(
+    inputId,
+    previewId,
+    statusId
+  ) {
+
+    const input =
+      document.getElementById(inputId);
+
+    const preview =
+      document.getElementById(previewId);
+
+    const status =
+      document.getElementById(statusId);
+
+
+    input.addEventListener(
+      "change",
+      () => {
+
+        const file =
+          input.files[0];
+
+        if (!file) {
+          return;
+        }
+
+
+        if (!file.type.startsWith("image/")) {
+
+          status.textContent =
+            "Please select an image file.";
+
+          return;
+        }
+
+
+        photoState[inputId] = file;
+
+
+        const url =
+          URL.createObjectURL(file);
+
+        preview.src = url;
+
+        preview.style.display =
+          "block";
+
+        status.textContent =
+          `${file.name} selected`;
+
+      }
+    );
+  }
+
+
+  setupPhoto(
+    "front_photo",
+    "front_preview",
+    "front_status"
+  );
+
+  setupPhoto(
+    "rear_photo",
+    "rear_preview",
+    "rear_status"
+  );
+
+  setupPhoto(
+    "overall_photo",
+    "overall_preview",
+    "overall_status"
+  );
+
+  setupPhoto(
+    "boot_photo",
+    "boot_preview",
+    "boot_status"
+  );
+
+  setupPhoto(
+    "closeup_photo",
+    "closeup_preview",
+    "closeup_status"
+  );
+
+  setupPhoto(
+    "signage_photo",
+    "signage_preview",
+    "signage_status"
+  );
+
+
+  const locationButton =
+    document.getElementById(
+      "location_button"
+    );
+
+
+  function getLocation() {
+
+    if (!navigator.geolocation) {
+
+      alert(
+        "GPS is not supported on this device."
+      );
+
+      return;
+    }
+
+
+    locationButton.disabled = true;
+
+    locationButton.textContent =
+      "Getting Location...";
+
+
+    navigator.geolocation.getCurrentPosition(
+
+      position => {
+
+        document.getElementById(
+          "latitude"
+        ).value =
+          position.coords.latitude;
+
+        document.getElementById(
+          "longitude"
+        ).value =
+          position.coords.longitude;
+
+
+        locationButton.disabled =
+          false;
+
+        locationButton.textContent =
+          "Location Captured";
+
+      },
+
+      error => {
+
+        console.error(error);
+
+        locationButton.disabled =
+          false;
+
+        locationButton.textContent =
+          "Get Current Location";
+
+        alert(
+          "Unable to get GPS location. Please enable location services."
+        );
+
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+
+    );
+
+  }
+
+
+  locationButton.addEventListener(
+    "click",
+    getLocation
+  );
+
+
+  // Automatically request GPS
+  getLocation();
+
+
+  const confirmation =
+    document.getElementById(
+      "evidence_confirmed"
+    );
+
+  const continueButton =
+    document.getElementById(
+      "continue"
+    );
+
+
+  confirmation.addEventListener(
+    "change",
+    () => {
+
+      continueButton.disabled =
+        !confirmation.checked;
+
+    }
+  );
+
+
+  continueButton.addEventListener(
+    "click",
+    () => {
+
+      const missing =
+        requiredPhotos.filter(
+          id => !photoState[id]
+        );
+
+
+      if (missing.length > 0) {
+
+        const message =
+          document.getElementById(
+            "message"
+          );
+
+        message.textContent =
+          "All six required photos must be captured before continuing.";
+
+        message.style.display =
+          "block";
+
+        return;
+      }
+
+
+      const latitude =
+        document.getElementById(
+          "latitude"
+        ).value;
+
+      const longitude =
+        document.getElementById(
+          "longitude"
+        ).value;
+
+
+      if (!latitude || !longitude) {
+
+        const message =
+          document.getElementById(
+            "message"
+          );
+
+        message.textContent =
+          "GPS location is required before continuing.";
+
+        message.style.display =
+          "block";
+
+        return;
+      }
+
+
+      /*
+       * For this first UI version we store
+       * the evidence metadata in sessionStorage.
+       *
+       * The actual image files will be uploaded
+       * to the backend in the next step.
+       */
+
+      sessionStorage.setItem(
+        "boot_evidence",
+        JSON.stringify({
+          captured_at:
+            new Date().toISOString(),
+
+          latitude,
+          longitude,
+
+          photos: {
+            front: photoState.front_photo.name,
+            rear: photoState.rear_photo.name,
+            overall: photoState.overall_photo.name,
+            boot: photoState.boot_photo.name,
+            closeup: photoState.closeup_photo.name,
+            signage: photoState.signage_photo.name
+          }
+        })
+      );
+
+
+      window.location.href =
+        "/boot-information.html";
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
