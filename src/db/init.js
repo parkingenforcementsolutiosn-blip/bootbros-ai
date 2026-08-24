@@ -19,6 +19,39 @@ CREATE TABLE IF NOT EXISTS organizations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  email VARCHAR(255) NOT NULL,
+  password_hash TEXT NOT NULL,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'viewer',
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_login_at TIMESTAMPTZ,
+
+  UNIQUE(organization_id, email),
+
+  CHECK (
+    role IN (
+      'organization_admin',
+      'dispatcher',
+      'technician',
+      'viewer'
+    )
+  )
+);
+
+CREATE TABLE IF NOT EXISTS technicians (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id),
+  technician_number VARCHAR(50),
+  phone_number VARCHAR(50),
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS vehicles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id),
@@ -80,6 +113,15 @@ CREATE TABLE IF NOT EXISTS calls (
   ended_at TIMESTAMPTZ
 );
 
+CREATE INDEX IF NOT EXISTS idx_users_organization
+  ON users(organization_id);
+
+CREATE INDEX IF NOT EXISTS idx_users_email
+  ON users(email);
+
+CREATE INDEX IF NOT EXISTS idx_technicians_user
+  ON technicians(user_id);
+
 CREATE INDEX IF NOT EXISTS idx_vehicles_plate
   ON vehicles(license_plate);
 
@@ -109,47 +151,5 @@ async function initDatabase() {
     process.exit(1);
   }
 }
-
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id),
-  email VARCHAR(255) NOT NULL,
-  password_hash TEXT NOT NULL,
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
-  role VARCHAR(50) NOT NULL DEFAULT 'viewer',
-  active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  last_login_at TIMESTAMPTZ,
-
-  CREATE INDEX IF NOT EXISTS idx_users_organization
-  ON users(organization_id);
-
-CREATE INDEX IF NOT EXISTS idx_users_email
-  ON users(email);
-
-CREATE INDEX IF NOT EXISTS idx_technicians_user
-  ON technicians(user_id);
-
-  UNIQUE(organization_id, email),
-
-  CHECK (
-    role IN (
-      'organization_admin',
-      'dispatcher',
-      'technician',
-      'viewer'
-    )
-  )
-);
-
-CREATE TABLE IF NOT EXISTS technicians (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL UNIQUE REFERENCES users(id),
-  technician_number VARCHAR(50),
-  phone_number VARCHAR(50),
-  active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
 initDatabase();
