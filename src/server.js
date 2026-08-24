@@ -275,6 +275,103 @@ app.post("/setup/test-boot", async (req, res) => {
   }
 });
 
+app.get("/api/vehicles/:plate", async (req, res) => {
+  try {
+    const plate = req.params.plate.trim().toUpperCase();
+
+    const result = await pool.query(
+      `
+      SELECT
+        v.id AS vehicle_id,
+        v.license_plate,
+        v.state,
+        v.make,
+        v.model,
+        v.color,
+
+        o.id AS organization_id,
+        o.name AS organization_name,
+
+        b.id AS boot_id,
+        b.status AS boot_status,
+        b.location AS boot_location,
+        b.booted_at,
+
+        vi.id AS violation_id,
+        vi.violation_type,
+        vi.description AS violation_description,
+        vi.amount_due,
+        vi.status AS violation_status
+
+      FROM vehicles v
+
+      JOIN organizations o
+        ON o.id = v.organization_id
+
+      LEFT JOIN boots b
+        ON b.vehicle_id = v.id
+        AND b.status = 'active'
+
+      LEFT JOIN violations vi
+        ON vi.id = b.violation_id
+
+      WHERE v.license_plate = $1
+      LIMIT 1
+      `,
+      [plate]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        found: false,
+        message: "No vehicle found for that license plate."
+      });
+    }
+
+    const vehicle = result.rows[0];
+
+    res.json({
+      found: true,
+      vehicle: {
+        id: vehicle.vehicle_id,
+        license_plate: vehicle.license_plate,
+        state: vehicle.state,
+        make: vehicle.make,
+        model: vehicle.model,
+        color: vehicle.color
+      },
+      organization: {
+        id: vehicle.organization_id,
+        name: vehicle.organization_name
+      },
+      boot: vehicle.boot_id
+        ? {
+            id: vehicle.boot_id,
+            status: vehicle.boot_status,
+            location: vehicle.boot_location,
+            booted_at: vehicle.booted_at
+          }
+        : null,
+      violation: vehicle.violation_id
+        ? {
+            id: vehicle.violation_id,
+            type: vehicle.violation_type,
+            description: vehicle.violation_description,
+            amount_due: vehicle.amount_due,
+            status: vehicle.violation_status
+          }
+        : null
+    });
+  } catch (error) {
+    console.error("Vehicle lookup failed:", error);
+
+    res.status(500).json({
+      found: false,
+      error: "Vehicle lookup failed"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
