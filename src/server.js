@@ -956,6 +956,121 @@ app.get("/api/removal-status/:plate", async (req, res) => {
   }
 });
 
+app.get("/api/dashboard", async (req, res) => {
+  try {
+    const organizationResult = await pool.query(
+      `
+      SELECT id, name
+      FROM organizations
+      WHERE slug = 'bootbros'
+      LIMIT 1
+      `
+    );
+
+    if (organizationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Organization not found"
+      });
+    }
+
+    const organizationId = organizationResult.rows[0].id;
+
+    const activeBootsResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM boots
+      WHERE organization_id = $1
+        AND status = 'active'
+      `,
+      [organizationId]
+    );
+
+    const removalRequestsResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM removal_requests
+      WHERE organization_id = $1
+        AND status IN (
+          'requested',
+          'assigned',
+          'en_route',
+          'in_progress'
+        )
+      `,
+      [organizationId]
+    );
+
+    const todaysBootsResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM boots
+      WHERE organization_id = $1
+        AND booted_at >= CURRENT_DATE
+        AND booted_at < CURRENT_DATE + INTERVAL '1 day'
+      `,
+      [organizationId]
+    );
+
+    const recentActivityResult = await pool.query(
+      `
+      SELECT
+        b.id,
+        v.license_plate,
+        b.status,
+        b.booted_at AS activity_time,
+        'boot' AS activity_type
+      FROM boots b
+      JOIN vehicles v
+        ON v.id = b.vehicle_id
+      WHERE b.organization_id = $1
+
+      UNION ALL
+
+      SELECT
+        rr.id,
+        v.license_plate,
+        rr.status,
+        rr.requested_at AS activity_time,
+        'removal_request' AS activity_type
+      FROM removal_requests rr
+      JOIN vehicles v
+        ON v.id = rr.vehicle_id
+      WHERE rr.organization_id = $1
+
+      ORDER BY activity_time DESC
+      LIMIT 10
+      `,
+      [organizationId]
+    );
+
+    res.json({
+      success: true,
+
+      organization: {
+        id: organizationId,
+        name: organizationResult.rows[0].name
+      },
+
+      stats: {
+        activeBoots: activeBootsResult.rows[0].count,
+        removalRequests: removalRequestsResult.rows[0].count,
+        todaysBoots: todaysBootsResult.rows[0].count
+      },
+
+      recentActivity: recentActivityResult.rows
+    });
+
+  } catch (error) {
+    console.error("Dashboard lookup failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not load dashboard"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
