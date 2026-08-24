@@ -779,6 +779,107 @@ app.post("/setup/technician", async (req, res) => {
   }
 });
 
+app.post("/setup/test-vehicle", async (req, res) => {
+  try {
+    const setupSecret = req.headers["x-bootbros-setup-secret"];
+
+    if (
+      !process.env.BOOTBROS_SETUP_SECRET ||
+      setupSecret !== process.env.BOOTBROS_SETUP_SECRET
+    ) {
+      return res.status(401).json({
+        success: false,
+        error: "Unauthorized"
+      });
+    }
+
+    const organizationResult = await pool.query(
+      `
+      SELECT id
+      FROM organizations
+      WHERE slug = 'bootbros'
+      LIMIT 1
+      `
+    );
+
+    if (organizationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "BootBros organization not found"
+      });
+    }
+
+    const organizationId = organizationResult.rows[0].id;
+
+    const vehicleResult = await pool.query(
+      `
+      INSERT INTO vehicles (
+        organization_id,
+        license_plate,
+        state,
+        make,
+        model,
+        color
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (organization_id, license_plate)
+      DO UPDATE SET
+        state = EXCLUDED.state,
+        make = EXCLUDED.make,
+        model = EXCLUDED.model,
+        color = EXCLUDED.color
+      RETURNING *
+      `,
+      [
+        organizationId,
+        "BOOT456",
+        "TEST",
+        "Honda",
+        "Accord",
+        "Blue"
+      ]
+    );
+
+    const vehicle = vehicleResult.rows[0];
+
+    const violationResult = await pool.query(
+      `
+      INSERT INTO violations (
+        organization_id,
+        vehicle_id,
+        violation_type,
+        description,
+        amount_due,
+        status
+      )
+      VALUES ($1, $2, $3, $4, $5, 'open')
+      RETURNING *
+      `,
+      [
+        organizationId,
+        vehicle.id,
+        "UNPAID_CITATIONS",
+        "Test unpaid parking citations",
+        150.00
+      ]
+    );
+
+    res.json({
+      success: true,
+      vehicle,
+      violation: violationResult.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Test vehicle creation failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create test vehicle"
+    });
+  }
+});
+
 app.post("/setup/test-boot", async (req, res) => {
   try {
     const org = await pool.query(
