@@ -1,6 +1,7 @@
 import express from "express";
 import pg from "pg";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const { Pool } = pg;
 
@@ -321,6 +322,128 @@ app.post("/setup/admin", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Could not create administrator"
+    });
+  }
+});
+
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Email and password are required"
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not configured");
+
+      return res.status(500).json({
+        success: false,
+        error: "Authentication is not configured"
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        u.id,
+        u.organization_id,
+        u.email,
+        u.password_hash,
+        u.first_name,
+        u.last_name,
+        u.role,
+        u.active,
+
+        o.name AS organization_name,
+        o.slug AS organization_slug
+
+      FROM users u
+
+      JOIN organizations o
+        ON o.id = u.organization_id
+
+      WHERE LOWER(u.email) = LOWER($1)
+      LIMIT 1
+      `,
+      [email.trim()]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid email or password"
+      });
+    }
+
+    const user = result.rows[0];
+
+    if (!user.active) {
+      return res.status(403).json({
+        success: false,
+        error: "Account is inactive"
+      });
+    }
+
+    const passwordValid = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    if (!passwordValid) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid email or password"
+      });
+    }
+
+    await pool.query(
+      `
+      UPDATE users
+      SET last_login_at = NOW()
+      WHERE id = $1
+      `,
+      [user.id]
+    );
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        organizationId: user.organization_id,
+        role: user.role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "8h"
+      }
+    );
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role
+      },
+      organization: {
+        id: user.organization_id,
+        name: user.organization_name,
+        slug: user.organization_slug
+      }
+    });
+
+  } catch (error) {
+    console.error("Login failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Login failed"
     });
   }
 });
