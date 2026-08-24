@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BootBros | Boot Information</title>
+
+  <link rel="stylesheet" href="/app.css">
+
+  <style>
+    .page {
+      min-height: 100vh;
+      background: #f5f7fa;
+    }
+
+    .header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: white;
+      border-bottom: 1px solid #e5e9ef;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #071b35;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1557b0;
+      color: white;
+      border-radius: 10px;
+    }
+
+    .back {
+      color: #344054;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .main {
+      max-width: 850px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      color: #071b35;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      color: #667085;
+    }
+
+    .card {
+      margin-bottom: 20px;
+      padding: 26px;
+      background: white;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #071b35;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      background: white;
+      color: #101828;
+      font-size: 14px;
+    }
+
+    .field input[readonly] {
+      background: #f8fafc;
+    }
+
+    .summary {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eaecf0;
+    }
+
+    .summary-row:last-child {
+      border-bottom: 0;
+    }
+
+    .summary-label {
+      color: #667085;
+    }
+
+    .summary-value {
+      color: #101828;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .gps {
+      margin-top: 18px;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 8px;
+      color: #475467;
+      font-size: 13px;
+    }
+
+    .button {
+      margin-top: 20px;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 8px;
+      background: #1557b0;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 8px;
+      background: #fef3f2;
+      color: #b42318;
+    }
+
+    @media (max-width: 650px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-row {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .summary-value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <header class="header">
+
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      BootBros
+    </div>
+
+    <a
+      href="/boot-evidence.html"
+      class="back"
+    >
+      ← Evidence
+    </a>
+
+  </header>
+
+  <main class="main">
+
+    <h1>Boot Information</h1>
+
+    <div class="subtitle">
+      Record the boot/device information before
+      final confirmation.
+    </div>
+
+
+    <section class="card">
+
+      <h2>Vehicle</h2>
+
+      <div class="summary">
+
+        <div class="summary-row">
+          <span class="summary-label">
+            License Plate
+          </span>
+
+          <span
+            id="plate"
+            class="summary-value"
+          >
+            —
+          </span>
+        </div>
+
+        <div class="summary-row">
+          <span class="summary-label">
+            Vehicle
+          </span>
+
+          <span
+            id="vehicle"
+            class="summary-value"
+          >
+            —
+          </span>
+        </div>
+
+        <div class="summary-row">
+          <span class="summary-label">
+            Color
+          </span>
+
+          <span
+            id="color"
+            class="summary-value"
+          >
+            —
+          </span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="card">
+
+      <h2>Boot Device</h2>
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label for="boot_id">
+            BOOT / DEVICE ID
+          </label>
+
+          <input
+            id="boot_id"
+            type="text"
+            placeholder="Example: BT-10482"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="boot_type">
+            BOOT TYPE
+          </label>
+
+          <select id="boot_type">
+
+            <option value="">
+              Select boot type
+            </option>
+
+            <option value="standard">
+              Standard
+            </option>
+
+            <option value="heavy_duty">
+              Heavy Duty
+            </option>
+
+            <option value="wheel_clamp">
+              Wheel Clamp
+            </option>
+
+            <option value="other">
+              Other
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="wheel_position">
+            WHEEL POSITION
+          </label>
+
+          <select id="wheel_position">
+
+            <option value="">
+              Select wheel
+            </option>
+
+            <option value="front_left">
+              Front Left
+            </option>
+
+            <option value="front_right">
+              Front Right
+            </option>
+
+            <option value="rear_left">
+              Rear Left
+            </option>
+
+            <option value="rear_right">
+              Rear Right
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="installed_at">
+            INSTALLATION DATE / TIME
+          </label>
+
+          <input
+            id="installed_at"
+            type="datetime-local"
+          >
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="card">
+
+      <h2>Technician</h2>
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            TECHNICIAN
+          </label>
+
+          <input
+            id="technician"
+            readonly
+            value="Current Technician"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            RECORD CREATED
+          </label>
+
+          <input
+            id="created_at"
+            readonly
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="gps">
+
+        <strong>GPS Location</strong>
+
+        <div>
+          Latitude:
+          <span id="latitude">—</span>
+        </div>
+
+        <div>
+          Longitude:
+          <span id="longitude">—</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="card">
+
+      <h2>Boot Reason</h2>
+
+      <div class="summary">
+
+        <div class="summary-row">
+
+          <span class="summary-label">
+            Reason
+          </span>
+
+          <span
+            id="reason"
+            class="summary-value"
+          >
+            —
+          </span>
+
+        </div>
+
+
+        <div class="summary-row">
+
+          <span class="summary-label">
+            Supporting Citations
+          </span>
+
+          <span
+            id="citations"
+            class="summary-value"
+          >
+            —
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div
+      id="message"
+      class="message"
+    ></div>
+
+
+    <button
+      id="continue"
+      class="button"
+    >
+      Review & Confirm Boot →
+    </button>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  const token =
+    sessionStorage.getItem("bootbros_token");
+
+  const vehicleJson =
+    sessionStorage.getItem("boot_vehicle");
+
+  const reasonJson =
+    sessionStorage.getItem("boot_reason");
+
+  const verificationJson =
+    sessionStorage.getItem("boot_verification");
+
+  const evidenceJson =
+    sessionStorage.getItem("boot_evidence");
+
+
+  if (
+    !token ||
+    !vehicleJson ||
+    !reasonJson ||
+    !verificationJson ||
+    !evidenceJson
+  ) {
+    window.location.href =
+      "/new-boot.html";
+  }
+
+
+  const vehicleData =
+    JSON.parse(vehicleJson);
+
+  const vehicle =
+    vehicleData.vehicle;
+
+
+  const reason =
+    JSON.parse(reasonJson);
+
+  const verification =
+    JSON.parse(verificationJson);
+
+  const evidence =
+    JSON.parse(evidenceJson);
+
+
+  document.getElementById("plate")
+    .textContent =
+    vehicle.license_plate || "—";
+
+
+  document.getElementById("vehicle")
+    .textContent =
+    `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "—";
+
+
+  document.getElementById("color")
+    .textContent =
+    vehicle.color || "—";
+
+
+  document.getElementById("reason")
+    .textContent =
+    reason.reason || "—";
+
+
+  document.getElementById("citations")
+    .textContent =
+    reason.citations || "None provided";
+
+
+  document.getElementById("latitude")
+    .textContent =
+    evidence.latitude || "—";
+
+
+  document.getElementById("longitude")
+    .textContent =
+    evidence.longitude || "—";
+
+
+  document.getElementById("created_at")
+    .value =
+    new Date().toLocaleString();
+
+
+  /*
+   * Default installation time to now.
+   */
+
+  const now =
+    new Date();
+
+  now.setMinutes(
+    now.getMinutes() -
+    now.getTimezoneOffset()
+  );
+
+  document.getElementById(
+    "installed_at"
+  ).value =
+    now.toISOString()
+      .slice(0, 16);
+
+
+  document.getElementById(
+    "continue"
+  ).addEventListener(
+    "click",
+    () => {
+
+      const bootId =
+        document.getElementById(
+          "boot_id"
+        ).value.trim();
+
+      const bootType =
+        document.getElementById(
+          "boot_type"
+        ).value;
+
+      const wheelPosition =
+        document.getElementById(
+          "wheel_position"
+        ).value;
+
+      const installedAt =
+        document.getElementById(
+          "installed_at"
+        ).value;
+
+
+      const message =
+        document.getElementById(
+          "message"
+        );
+
+
+      if (!bootId) {
+
+        message.textContent =
+          "Enter the boot/device ID.";
+
+        message.style.display =
+          "block";
+
+        return;
+      }
+
+
+      if (!bootType) {
+
+        message.textContent =
+          "Select the boot type.";
+
+        message.style.display =
+          "block";
+
+        return;
+      }
+
+
+      if (!wheelPosition) {
+
+        message.textContent =
+          "Select the wheel position.";
+
+        message.style.display =
+          "block";
+
+        return;
+      }
+
+
+      if (!installedAt) {
+
+        message.textContent =
+          "Enter the installation date and time.";
+
+        message.style.display =
+          "block";
+
+        return;
+      }
+
+
+      const bootInformation = {
+
+        boot_id: bootId,
+
+        boot_type: bootType,
+
+        wheel_position:
+          wheelPosition,
+
+        installed_at:
+          new Date(
+            installedAt
+          ).toISOString(),
+
+        technician:
+          "Current Technician",
+
+        latitude:
+          evidence.latitude,
+
+        longitude:
+          evidence.longitude
+
+      };
+
+
+      sessionStorage.setItem(
+        "boot_information",
+        JSON.stringify(
+          bootInformation
+        )
+      );
+
+
+      window.location.href =
+        "/boot-confirmation.html";
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
