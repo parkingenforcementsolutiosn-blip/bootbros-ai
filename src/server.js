@@ -477,6 +477,110 @@ app.post("/api/removal-requests", async (req, res) => {
   }
 });
 
+app.patch("/api/removal-requests/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, payment_status } = req.body;
+
+    const allowedStatuses = [
+      "requested",
+      "assigned",
+      "en_route",
+      "in_progress",
+      "completed",
+      "cancelled"
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid removal request status"
+      });
+    }
+
+    const requestResult = await pool.query(
+      `
+      SELECT *
+      FROM removal_requests
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    if (requestResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Removal request not found"
+      });
+    }
+
+    const request = requestResult.rows[0];
+
+    let finalPaymentStatus = request.payment_status;
+
+    if (payment_status) {
+      if (!["unpaid", "paid"].includes(payment_status)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid payment status"
+        });
+      }
+
+      finalPaymentStatus = payment_status;
+    }
+
+    const completedAt =
+      status === "completed"
+        ? new Date()
+        : request.completed_at;
+
+    const result = await pool.query(
+      `
+      UPDATE removal_requests
+      SET
+        status = $1,
+        payment_status = $2,
+        completed_at = $3
+      WHERE id = $4
+      RETURNING *
+      `,
+      [
+        status,
+        finalPaymentStatus,
+        completedAt,
+        id
+      ]
+    );
+
+    if (status === "completed") {
+      await pool.query(
+        `
+        UPDATE boots
+        SET
+          status = 'removed',
+          removed_at = NOW()
+        WHERE id = $1
+        `,
+        [request.boot_id]
+      );
+    }
+
+    res.json({
+      success: true,
+      removal_request: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Removal status update failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not update removal request"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
