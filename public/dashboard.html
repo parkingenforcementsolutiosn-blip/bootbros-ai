@@ -487,52 +487,8 @@
               </tr>
             </thead>
 
-            <tbody>
-
-              <tr>
-                <td>BOOT123</td>
-                <td>Boot installed</td>
-                <td>10:42 AM</td>
-                <td>
-                  <span class="status booted">
-                    Active
-                  </span>
-                </td>
-              </tr>
-
-              <tr>
-                <td>ABC123</td>
-                <td>Removal requested</td>
-                <td>10:31 AM</td>
-                <td>
-                  <span class="status removal">
-                    Requested
-                  </span>
-                </td>
-              </tr>
-
-              <tr>
-                <td>XYZ789</td>
-                <td>Boot removed</td>
-                <td>09:55 AM</td>
-                <td>
-                  <span class="status removed">
-                    Completed
-                  </span>
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </section>
-
-      </main>
-
-    </div>
-
-  </div>
+          <tbody>
+          </tbody>
 
   <script>
 
@@ -579,11 +535,218 @@
 
     });
 
-    function startNewBoot() {
-      alert(
-        "The technician boot workflow is our next module."
+   <script>
+  const token =
+    sessionStorage.getItem("bootbros_token");
+
+  const userJson =
+    sessionStorage.getItem("bootbros_user");
+
+  if (!token || !userJson) {
+    window.location.href = "/";
+  }
+
+  const user = JSON.parse(userJson);
+
+  const fullName =
+    `${user.first_name} ${user.last_name}`;
+
+  document.getElementById(
+    "userName"
+  ).textContent = fullName;
+
+  document.getElementById(
+    "welcomeTitle"
+  ).textContent = `Welcome, ${user.first_name}`;
+
+  document.getElementById(
+    "logoutButton"
+  ).addEventListener("click", () => {
+    sessionStorage.removeItem("bootbros_token");
+    sessionStorage.removeItem("bootbros_user");
+    sessionStorage.removeItem("bootbros_organization");
+
+    window.location.href = "/";
+  });
+
+  async function loadDashboard() {
+    try {
+      const response = await fetch(
+        "/api/dashboard",
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
       );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error || "Could not load dashboard"
+        );
+      }
+
+      document.getElementById(
+        "activeBoots"
+      ).textContent =
+        data.stats.activeBoots;
+
+      document.getElementById(
+        "removalRequests"
+      ).textContent =
+        data.stats.removalRequests;
+
+      document.getElementById(
+        "todaysBoots"
+      ).textContent =
+        data.stats.todaysBoots;
+
+      renderActivity(
+        data.recentActivity
+      );
+
+    } catch (error) {
+      console.error(
+        "Dashboard error:",
+        error
+      );
+
+      document.getElementById(
+        "activeBoots"
+      ).textContent = "—";
+
+      document.getElementById(
+        "removalRequests"
+      ).textContent = "—";
+
+      document.getElementById(
+        "todaysBoots"
+      ).textContent = "—";
     }
+  }
+
+  function renderActivity(activity) {
+    const tableBody =
+      document.querySelector(
+        ".activity tbody"
+      );
+
+    if (!activity || activity.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="4">
+            No recent activity.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    tableBody.innerHTML =
+      activity.map(item => {
+
+        const time =
+          new Date(
+            item.activity_time
+          ).toLocaleString();
+
+        let activityText =
+          "Boot activity";
+
+        let statusClass =
+          "booted";
+
+        let statusText =
+          item.status;
+
+        if (
+          item.activity_type ===
+          "removal_request"
+        ) {
+          activityText =
+            "Removal request";
+
+          statusClass =
+            item.status === "completed"
+              ? "removed"
+              : "removal";
+        } else if (
+          item.status === "removed"
+        ) {
+          activityText =
+            "Boot removed";
+
+          statusClass =
+            "removed";
+        } else if (
+          item.status === "active"
+        ) {
+          activityText =
+            "Boot installed";
+
+          statusClass =
+            "booted";
+        }
+
+        statusText =
+          item.status
+            .replaceAll("_", " ")
+            .replace(
+              /\b\w/g,
+              char =>
+                char.toUpperCase()
+            );
+
+        return `
+          <tr>
+            <td>
+              ${escapeHtml(
+                item.license_plate
+              )}
+            </td>
+
+            <td>
+              ${activityText}
+            </td>
+
+            <td>
+              ${escapeHtml(time)}
+            </td>
+
+            <td>
+              <span
+                class="status ${statusClass}"
+              >
+                ${escapeHtml(
+                  statusText
+                )}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function startNewBoot() {
+    window.location.href =
+      "/new-boot.html";
+  }
+
+  loadDashboard();
+</script>
 
   </script>
 
