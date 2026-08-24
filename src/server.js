@@ -668,6 +668,117 @@ app.post("/setup/boot-reason", async (req, res) => {
   }
 });
 
+app.post("/setup/technician", async (req, res) => {
+  try {
+    const setupSecret = req.headers["x-bootbros-setup-secret"];
+
+    if (
+      !process.env.BOOTBROS_SETUP_SECRET ||
+      setupSecret !== process.env.BOOTBROS_SETUP_SECRET
+    ) {
+      return res.status(401).json({
+        success: false,
+        error: "Unauthorized"
+      });
+    }
+
+    const {
+      email,
+      technician_number,
+      phone_number
+    } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: "email is required"
+      });
+    }
+
+    const organizationResult = await pool.query(
+      `
+      SELECT id
+      FROM organizations
+      WHERE slug = 'bootbros'
+      LIMIT 1
+      `
+    );
+
+    if (organizationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "BootBros organization not found"
+      });
+    }
+
+    const organizationId = organizationResult.rows[0].id;
+
+    const userResult = await pool.query(
+      `
+      SELECT
+        id,
+        organization_id,
+        email,
+        first_name,
+        last_name,
+        role,
+        active
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+        AND organization_id = $2
+      LIMIT 1
+      `,
+      [email.trim(), organizationId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found. Create the user first."
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    const technicianResult = await pool.query(
+      `
+      INSERT INTO technicians (
+        user_id,
+        technician_number,
+        phone_number,
+        active
+      )
+      VALUES ($1, $2, $3, true)
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        technician_number = EXCLUDED.technician_number,
+        phone_number = EXCLUDED.phone_number,
+        active = true
+      RETURNING *
+      `,
+      [
+        user.id,
+        technician_number || null,
+        phone_number || null
+      ]
+    );
+
+    res.json({
+      success: true,
+      technician: technicianResult.rows[0],
+      user: user
+    });
+
+  } catch (error) {
+    console.error("Technician setup failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create technician"
+    });
+  }
+});
+
 app.post("/setup/test-boot", async (req, res) => {
   try {
     const org = await pool.query(
