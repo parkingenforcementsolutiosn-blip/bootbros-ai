@@ -587,6 +587,87 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+app.post("/setup/boot-reason", async (req, res) => {
+  try {
+    const setupSecret = req.headers["x-bootbros-setup-secret"];
+
+    if (
+      !process.env.BOOTBROS_SETUP_SECRET ||
+      setupSecret !== process.env.BOOTBROS_SETUP_SECRET
+    ) {
+      return res.status(401).json({
+        success: false,
+        error: "Unauthorized"
+      });
+    }
+
+    const { code, name, description } = req.body;
+
+    if (!code || !name) {
+      return res.status(400).json({
+        success: false,
+        error: "code and name are required"
+      });
+    }
+
+    const organizationResult = await pool.query(
+      `
+      SELECT id
+      FROM organizations
+      WHERE slug = 'bootbros'
+      LIMIT 1
+      `
+    );
+
+    if (organizationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "BootBros organization not found"
+      });
+    }
+
+    const organizationId = organizationResult.rows[0].id;
+
+    const result = await pool.query(
+      `
+      INSERT INTO boot_reasons (
+        organization_id,
+        code,
+        name,
+        description,
+        active
+      )
+      VALUES ($1, $2, $3, $4, true)
+      ON CONFLICT (organization_id, code)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        description = EXCLUDED.description,
+        active = true
+      RETURNING *
+      `,
+      [
+        organizationId,
+        code.trim().toUpperCase(),
+        name.trim(),
+        description || null
+      ]
+    );
+
+    res.json({
+      success: true,
+      boot_reason: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Boot reason setup failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create boot reason"
+    });
+  }
+});
+
 app.post("/setup/test-boot", async (req, res) => {
   try {
     const org = await pool.query(
