@@ -372,6 +372,111 @@ app.get("/api/vehicles/:plate", async (req, res) => {
   }
 });
 
+app.post("/api/removal-requests", async (req, res) => {
+  try {
+    const { license_plate, notes } = req.body;
+
+    if (!license_plate) {
+      return res.status(400).json({
+        success: false,
+        error: "license_plate is required"
+      });
+    }
+
+    const plate = license_plate.trim().toUpperCase();
+
+    const vehicleResult = await pool.query(
+      `
+      SELECT
+        v.id AS vehicle_id,
+        v.organization_id,
+        b.id AS boot_id,
+        b.status AS boot_status
+      FROM vehicles v
+      LEFT JOIN boots b
+        ON b.vehicle_id = v.id
+        AND b.status = 'active'
+      WHERE v.license_plate = $1
+      LIMIT 1
+      `,
+      [plate]
+    );
+
+    if (vehicleResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Vehicle not found"
+      });
+    }
+
+    const vehicle = vehicleResult.rows[0];
+
+    if (!vehicle.boot_id || vehicle.boot_status !== "active") {
+      return res.status(409).json({
+        success: false,
+        error: "No active boot found for this vehicle"
+      });
+    }
+
+    const existingRequest = await pool.query(
+      `
+      SELECT *
+      FROM removal_requests
+      WHERE vehicle_id = $1
+        AND status IN ('requested', 'assigned', 'en_route', 'in_progress')
+      ORDER BY requested_at DESC
+      LIMIT 1
+      `,
+      [vehicle.vehicle_id]
+    );
+
+    if (existingRequest.rows.length > 0) {
+      return res.json({
+        success: true,
+        existing: true,
+        removal_request: existingRequest.rows[0]
+      });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO removal_requests (
+        organization_id,
+        vehicle_id,
+        boot_id,
+        status,
+        requested_by,
+        payment_method,
+        payment_status,
+        notes
+      )
+      VALUES ($1, $2, $3, 'requested', 'phone_ai', 'in_person', 'unpaid', $4)
+      RETURNING *
+      `,
+      [
+        vehicle.organization_id,
+        vehicle.vehicle_id,
+        vehicle.boot_id,
+        notes || null
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      existing: false,
+      removal_request: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Removal request failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create removal request"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
