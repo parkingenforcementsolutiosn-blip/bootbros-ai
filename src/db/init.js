@@ -122,6 +122,15 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   last_login_at TIMESTAMPTZ,
 
+  CREATE INDEX IF NOT EXISTS idx_users_organization
+  ON users(organization_id);
+
+CREATE INDEX IF NOT EXISTS idx_users_email
+  ON users(email);
+
+CREATE INDEX IF NOT EXISTS idx_technicians_user
+  ON technicians(user_id);
+
   UNIQUE(organization_id, email),
 
   CHECK (
