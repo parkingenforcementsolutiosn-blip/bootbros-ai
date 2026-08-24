@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BootBros | Start New Boot</title>
+
+  <link rel="stylesheet" href="/app.css">
+
+  <style>
+    .boot-page {
+      min-height: 100vh;
+      background: #f5f7fa;
+    }
+
+    .boot-header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: white;
+      border-bottom: 1px solid #e5e9ef;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #071b35;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1557b0;
+      color: white;
+      border-radius: 10px;
+    }
+
+    .back-button {
+      color: #344054;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .boot-main {
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .page-heading {
+      margin-bottom: 25px;
+    }
+
+    .page-heading h1 {
+      margin: 0 0 7px;
+      color: #071b35;
+      font-size: 30px;
+    }
+
+    .page-heading p {
+      margin: 0;
+      color: #667085;
+    }
+
+    .card {
+      padding: 28px;
+      margin-bottom: 20px;
+      background: white;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+      box-shadow:
+        0 5px 18px rgba(7, 27, 53, 0.05);
+    }
+
+    .card h2 {
+      margin: 0 0 20px;
+      color: #071b35;
+      font-size: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 13px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      background: white;
+      color: #101828;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #1557b0;
+      box-shadow:
+        0 0 0 3px rgba(21, 87, 176, 0.1);
+    }
+
+    .primary-button {
+      margin-top: 18px;
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 8px;
+      background: #1557b0;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary-button:hover {
+      background: #10458e;
+    }
+
+    .primary-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 11px 13px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .message.error {
+      display: block;
+      color: #b42318;
+      background: #fef3f2;
+    }
+
+    .message.success {
+      display: block;
+      color: #027a48;
+      background: #ecfdf3;
+    }
+
+    .vehicle {
+      display: none;
+    }
+
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .vehicle-item {
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 9px;
+    }
+
+    .vehicle-label {
+      color: #667085;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .vehicle-value {
+      margin-top: 5px;
+      color: #071b35;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .violation {
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid #fedf89;
+      border-radius: 9px;
+      background: #fffaeb;
+    }
+
+    .violation-title {
+      color: #93370d;
+      font-weight: 800;
+    }
+
+    .violation-detail {
+      margin-top: 5px;
+      color: #7a2e0e;
+      font-size: 14px;
+    }
+
+    .continue-button {
+      display: none;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 650px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .vehicle-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="boot-page">
+
+  <header class="boot-header">
+
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      BootBros
+    </div>
+
+    <a
+      href="/dashboard.html"
+      class="back-button"
+    >
+      ← Dashboard
+    </a>
+
+  </header>
+
+  <main class="boot-main">
+
+    <div class="page-heading">
+
+      <h1>Start New Boot</h1>
+
+      <p>
+        Look up the vehicle before beginning
+        the boot installation process.
+      </p>
+
+    </div>
+
+    <section class="card">
+
+      <h2>1. Find Vehicle</h2>
+
+      <form id="vehicleForm">
+
+        <div class="form-row">
+
+          <div>
+            <label for="licensePlate">
+              License Plate
+            </label>
+
+            <input
+              id="licensePlate"
+              name="licensePlate"
+              type="text"
+              placeholder="ABC123"
+              autocomplete="off"
+              required
+            >
+          </div>
+
+          <div>
+            <label for="state">
+              State
+            </label>
+
+            <select id="state">
+
+              <option value="">
+                Select
+              </option>
+
+              <option>AL</option>
+              <option>AK</option>
+              <option>AZ</option>
+              <option>AR</option>
+              <option>CA</option>
+              <option>CO</option>
+              <option>CT</option>
+              <option>FL</option>
+              <option>GA</option>
+              <option>IL</option>
+              <option>MD</option>
+              <option>MA</option>
+              <option>MI</option>
+              <option>NJ</option>
+              <option>NY</option>
+              <option>NC</option>
+              <option>OH</option>
+              <option>PA</option>
+              <option>SC</option>
+              <option>TX</option>
+              <option>VA</option>
+              <option>WA</option>
+
+            </select>
+          </div>
+
+        </div>
+
+        <button
+          id="lookupButton"
+          class="primary-button"
+          type="submit"
+        >
+          Look Up Vehicle
+        </button>
+
+        <div
+          id="lookupMessage"
+          class="message"
+        ></div>
+
+      </form>
+
+    </section>
+
+    <section
+      id="vehicleCard"
+      class="card vehicle"
+    >
+
+      <h2>2. Verify Vehicle</h2>
+
+      <div class="vehicle-grid">
+
+        <div class="vehicle-item">
+          <div class="vehicle-label">
+            License Plate
+          </div>
+
+          <div
+            id="vehiclePlate"
+            class="vehicle-value"
+          ></div>
+        </div>
+
+        <div class="vehicle-item">
+          <div class="vehicle-label">
+            State
+          </div>
+
+          <div
+            id="vehicleState"
+            class="vehicle-value"
+          ></div>
+        </div>
+
+        <div class="vehicle-item">
+          <div class="vehicle-label">
+            Make
+          </div>
+
+          <div
+            id="vehicleMake"
+            class="vehicle-value"
+          ></div>
+        </div>
+
+        <div class="vehicle-item">
+          <div class="vehicle-label">
+            Model
+          </div>
+
+          <div
+            id="vehicleModel"
+            class="vehicle-value"
+          ></div>
+        </div>
+
+        <div class="vehicle-item">
+          <div class="vehicle-label">
+            Color
+          </div>
+
+          <div
+            id="vehicleColor"
+            class="vehicle-value"
+          ></div>
+        </div>
+
+        <div class="vehicle-item">
+          <div class="vehicle-label">
+            Boot Status
+          </div>
+
+          <div
+            id="vehicleBoot"
+            class="vehicle-value"
+          ></div>
+        </div>
+
+      </div>
+
+      <div
+        id="violationBox"
+        class="violation"
+      >
+
+        <div
+          id="violationTitle"
+          class="violation-title"
+        ></div>
+
+        <div
+          id="violationDetail"
+          class="violation-detail"
+        ></div>
+
+      </div>
+
+      <button
+        id="continueButton"
+        class="primary-button continue-button"
+      >
+        Continue to Boot Reason →
+      </button>
+
+    </section>
+
+  </main>
+
+</div>
+
+<script>
+
+  const token =
+    sessionStorage.getItem("bootbros_token");
+
+  const userJson =
+    sessionStorage.getItem("bootbros_user");
+
+  if (!token || !userJson) {
+    window.location.href = "/";
+  }
+
+  const form =
+    document.getElementById("vehicleForm");
+
+  const lookupButton =
+    document.getElementById("lookupButton");
+
+  const message =
+    document.getElementById("lookupMessage");
+
+  const vehicleCard =
+    document.getElementById("vehicleCard");
+
+  const continueButton =
+    document.getElementById("continueButton");
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+      const plate =
+        document
+          .getElementById("licensePlate")
+          .value
+          .trim()
+          .toUpperCase();
+
+      if (!plate) {
+        showError(
+          "Enter a license plate."
+        );
+        return;
+      }
+
+      lookupButton.disabled = true;
+      lookupButton.textContent =
+        "Looking up...";
+
+      message.className = "message";
+      message.textContent = "";
+
+      vehicleCard.style.display = "none";
+
+      try {
+
+        const response =
+          await fetch(
+            `/api/vehicles/${encodeURIComponent(plate)}`,
+            {
+              headers: {
+                "Authorization":
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok || !data.found) {
+          throw new Error(
+            data.message ||
+            data.error ||
+            "Vehicle not found."
+          );
+        }
+
+        displayVehicle(data);
+
+      } catch (error) {
+
+        console.error(
+          "Vehicle lookup failed:",
+          error
+        );
+
+        showError(
+          error.message ||
+          "Vehicle lookup failed."
+        );
+
+      } finally {
+
+        lookupButton.disabled = false;
+        lookupButton.textContent =
+          "Look Up Vehicle";
+
+      }
+
+    }
+  );
+
+  function displayVehicle(data) {
+
+    const vehicle =
+      data.vehicle;
+
+    const boot =
+      data.boot;
+
+    const violation =
+      data.violation;
+
+    document.getElementById(
+      "vehiclePlate"
+    ).textContent =
+      vehicle.license_plate || "—";
+
+    document.getElementById(
+      "vehicleState"
+    ).textContent =
+      vehicle.state || "—";
+
+    document.getElementById(
+      "vehicleMake"
+    ).textContent =
+      vehicle.make || "—";
+
+    document.getElementById(
+      "vehicleModel"
+    ).textContent =
+      vehicle.model || "—";
+
+    document.getElementById(
+      "vehicleColor"
+    ).textContent =
+      vehicle.color || "—";
+
+    document.getElementById(
+      "vehicleBoot"
+    ).textContent =
+      boot
+        ? "ACTIVE"
+        : "No active boot";
+
+    if (violation) {
+
+      document.getElementById(
+        "violationTitle"
+      ).textContent =
+        violation.type;
+
+      document.getElementById(
+        "violationDetail"
+      ).textContent =
+        `${violation.description || ""} ` +
+        `Amount due: $${violation.amount_due}`;
+
+    } else {
+
+      document.getElementById(
+        "violationTitle"
+      ).textContent =
+        "No active violation found";
+
+      document.getElementById(
+        "violationDetail"
+      ).textContent =
+        "Review the vehicle before proceeding.";
+
+    }
+
+    vehicleCard.style.display =
+      "block";
+
+    continueButton.style.display =
+      "inline-block";
+
+    continueButton.onclick =
+      () => {
+
+        sessionStorage.setItem(
+          "boot_vehicle",
+          JSON.stringify(data)
+        );
+
+        window.location.href =
+          "/boot-reason.html";
+
+      };
+  }
+
+  function showError(text) {
+
+    message.textContent = text;
+    message.className =
+      "message error";
+
+  }
+
+</script>
+
+</body>
+</html>
