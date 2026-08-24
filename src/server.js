@@ -134,6 +134,39 @@ app.get("/health", async (req, res) => {
   }
 });
 
+app.post("/setup/bootbros", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `
+      INSERT INTO organizations (name, slug, phone_number)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (slug)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        phone_number = EXCLUDED.phone_number
+      RETURNING id, name, slug, phone_number, active
+      `,
+      [
+        "BootBros",
+        "bootbros",
+        null
+      ]
+    );
+
+    res.json({
+      success: true,
+      organization: result.rows[0]
+    });
+  } catch (error) {
+    console.error("BootBros setup failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create BootBros"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
