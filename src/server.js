@@ -695,6 +695,338 @@ app.post("/setup/test-boot", async (req, res) => {
   }
 });
 
+app.post("/api/boots", async (req, res) => {
+  try {
+    const {
+      license_plate,
+      reason_code,
+      violation_id,
+      citation_number,
+      boot_device_id,
+      boot_type,
+      wheel_position,
+      location,
+      latitude,
+      longitude,
+      technician_id,
+      evidence
+    } = req.body;
+
+    if (!license_plate) {
+      return res.status(400).json({
+        success: false,
+        error: "license_plate is required"
+      });
+    }
+
+    if (!reason_code) {
+      return res.status(400).json({
+        success: false,
+        error: "reason_code is required"
+      });
+    }
+
+    if (!boot_device_id) {
+      return res.status(400).json({
+        success: false,
+        error: "boot_device_id is required"
+      });
+    }
+
+    if (!boot_type) {
+      return res.status(400).json({
+        success: false,
+        error: "boot_type is required"
+      });
+    }
+
+    if (!wheel_position) {
+      return res.status(400).json({
+        success: false,
+        error: "wheel_position is required"
+      });
+    }
+
+    if (!technician_id) {
+      return res.status(400).json({
+        success: false,
+        error: "technician_id is required"
+      });
+    }
+
+    const plate = license_plate.trim().toUpperCase();
+
+    // Find vehicle and organization
+    const vehicleResult = await pool.query(
+      `
+      SELECT
+        v.id AS vehicle_id,
+        v.organization_id,
+        v.license_plate
+      FROM vehicles v
+      WHERE v.license_plate = $1
+      LIMIT 1
+      `,
+      [plate]
+    );
+
+    if (vehicleResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Vehicle not found"
+      });
+    }
+
+    const vehicle = vehicleResult.rows[0];
+
+    // Verify technician belongs to the organization
+    const technicianResult = await pool.query(
+      `
+      SELECT
+        t.id,
+        t.user_id,
+        t.active
+      FROM technicians t
+      JOIN users u
+        ON u.id = t.user_id
+      WHERE t.id = $1
+        AND u.organization_id = $2
+        AND t.active = true
+        AND u.active = true
+      LIMIT 1
+      `,
+      [technician_id, vehicle.organization_id]
+    );
+
+    if (technicianResult.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: "Invalid or inactive technician"
+      });
+    }
+
+    // Verify the boot reason is approved for this organization
+    const reasonResult = await pool.query(
+      `
+      SELECT *
+      FROM boot_reasons
+      WHERE organization_id = $1
+        AND code = $2
+        AND active = true
+      LIMIT 1
+      `,
+      [vehicle.organization_id, reason_code]
+    );
+
+    if (reasonResult.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Boot reason is not approved"
+      });
+    }
+
+    // If a violation was supplied, make sure it belongs to this vehicle
+    let violation = null;
+
+    if (violation_id) {
+      const violationResult = await pool.query(
+        `
+        SELECT *
+        FROM violations
+        WHERE id = $1
+          AND vehicle_id = $2
+          AND organization_id = $3
+        LIMIT 1
+        `,
+        [
+          violation_id,
+          vehicle.vehicle_id,
+          vehicle.organization_id
+        ]
+      );
+
+      if (violationResult.rows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid violation for this vehicle"
+        });
+      }
+
+      violation = violationResult.rows[0];
+    }
+
+    // Prevent duplicate active boots
+    const activeBootResult = await pool.query(
+      `
+      SELECT id
+      FROM boots
+      WHERE vehicle_id = $1
+        AND status = 'active'
+      LIMIT 1
+      `,
+      [vehicle.vehicle_id]
+    );
+
+    if (activeBootResult.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: "Vehicle already has an active boot",
+        boot_id: activeBootResult.rows[0].id
+      });
+    }
+
+    // Create the boot record
+    const bootResult = await pool.query(
+      `
+      INSERT INTO boots (
+        organization_id,
+        vehicle_id,
+        violation_id,
+        status,
+        location,
+        technician_id,
+        boot_device_id,
+        boot_type,
+        wheel_position,
+        latitude,
+        longitude
+      )
+      VALUES (
+        $1, $2, $3, 'active', $4,
+        $5, $6, $7, $8, $9, $10
+      )
+      RETURNING *
+      `,
+      [
+        vehicle.organization_id,
+        vehicle.vehicle_id,
+        violation ? violation.id : null,
+        location || null,
+        technician_id,
+        boot_device_id,
+        boot_type,
+        wheel_position,
+        latitude || null,
+        longitude || null
+      ]
+    );
+
+    const boot = bootResult.rows[0];
+
+    // Store citation information
+    if (citation_number || violation) {
+      await pool.query(
+        `
+        INSERT INTO boot_citations (
+          boot_id,
+          violation_id,
+          citation_number,
+          amount_due
+        )
+        VALUES ($1, $2, $3, $4)
+        `,
+        [
+          boot.id,
+          violation ? violation.id : null,
+          citation_number || null,
+          violation ? violation.amount_due : null
+        ]
+      );
+    }
+
+    // Store evidence records
+    if (Array.isArray(evidence)) {
+      for (const item of evidence) {
+        if (!item || !item.evidence_type) {
+          continue;
+        }
+
+        await pool.query(
+          `
+          INSERT INTO boot_evidence (
+            boot_id,
+            evidence_type,
+            file_url,
+            latitude,
+            longitude
+          )
+          VALUES ($1, $2, $3, $4, $5)
+          `,
+          [
+            boot.id,
+            item.evidence_type,
+            item.file_url || null,
+            item.latitude || latitude || null,
+            item.longitude || longitude || null
+          ]
+        );
+      }
+    }
+
+    // Create audit record
+    await pool.query(
+      `
+      INSERT INTO audit_logs (
+        organization_id,
+        technician_id,
+        action,
+        entity_type,
+        entity_id,
+        details
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      `,
+      [
+        vehicle.organization_id,
+        technician_id,
+        "boot_installed",
+        "boot",
+        boot.id,
+        JSON.stringify({
+          license_plate: plate,
+          reason_code,
+          citation_number: citation_number || null,
+          boot_device_id,
+          boot_type,
+          wheel_position,
+          location: location || null,
+          latitude: latitude || null,
+          longitude: longitude || null,
+          evidence_count: Array.isArray(evidence)
+            ? evidence.length
+            : 0
+        })
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Boot installation recorded successfully",
+      boot: {
+        id: boot.id,
+        vehicle_id: boot.vehicle_id,
+        status: boot.status,
+        boot_device_id: boot.boot_device_id,
+        boot_type: boot.boot_type,
+        wheel_position: boot.wheel_position,
+        location: boot.location,
+        latitude: boot.latitude,
+        longitude: boot.longitude,
+        booted_at: boot.booted_at,
+        technician_id: boot.technician_id
+      }
+    });
+
+  } catch (error) {
+    console.error("Boot installation failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not record boot installation"
+    });
+  }
+});
+
 app.get("/api/vehicles/:plate", async (req, res) => {
   try {
     const plate = req.params.plate.trim().toUpperCase();
