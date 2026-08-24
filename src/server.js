@@ -167,6 +167,114 @@ app.post("/setup/bootbros", async (req, res) => {
   }
 });
 
+app.post("/setup/test-boot", async (req, res) => {
+  try {
+    const org = await pool.query(
+      `SELECT id FROM organizations WHERE slug = 'bootbros'`
+    );
+
+    if (org.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "BootBros organization not found"
+      });
+    }
+
+    const organizationId = org.rows[0].id;
+
+    const vehicle = await pool.query(
+      `
+      INSERT INTO vehicles (
+        organization_id,
+        license_plate,
+        state,
+        make,
+        model,
+        color
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (organization_id, license_plate)
+      DO UPDATE SET
+        state = EXCLUDED.state,
+        make = EXCLUDED.make,
+        model = EXCLUDED.model,
+        color = EXCLUDED.color
+      RETURNING *
+      `,
+      [
+        organizationId,
+        "BOOT123",
+        "TEST",
+        "Toyota",
+        "Camry",
+        "Silver"
+      ]
+    );
+
+    const vehicleId = vehicle.rows[0].id;
+
+    const violation = await pool.query(
+      `
+      INSERT INTO violations (
+        organization_id,
+        vehicle_id,
+        violation_type,
+        description,
+        amount_due,
+        status
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+      `,
+      [
+        organizationId,
+        vehicleId,
+        "TEST_BOOT_VIOLATION",
+        "Test BootBros violation",
+        125.00,
+        "open"
+      ]
+    );
+
+    const violationId = violation.rows[0].id;
+
+    const boot = await pool.query(
+      `
+      INSERT INTO boots (
+        organization_id,
+        vehicle_id,
+        violation_id,
+        status,
+        location
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [
+        organizationId,
+        vehicleId,
+        violationId,
+        "active",
+        "Test Parking Lot"
+      ]
+    );
+
+    res.json({
+      success: true,
+      test_vehicle: vehicle.rows[0],
+      violation: violation.rows[0],
+      boot: boot.rows[0]
+    });
+  } catch (error) {
+    console.error("Test boot creation failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create test boot"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
