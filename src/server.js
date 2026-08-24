@@ -1,5 +1,6 @@
 import express from "express";
 import pg from "pg";
+import bcrypt from "bcryptjs";
 
 const { Pool } = pg;
 
@@ -205,6 +206,121 @@ app.post("/setup/bootbros", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Could not create BootBros"
+    });
+  }
+});
+
+app.post("/setup/admin", async (req, res) => {
+  try {
+    const setupSecret = req.headers["x-bootbros-setup-secret"];
+
+    if (!setupSecret || setupSecret !== process.env.BOOTBROS_SETUP_SECRET) {
+      return res.status(401).json({
+        success: false,
+        error: "Unauthorized"
+      });
+    }
+
+    const {
+      email,
+      password,
+      first_name,
+      last_name
+    } = req.body;
+
+    if (!email || !password || !first_name || !last_name) {
+      return res.status(400).json({
+        success: false,
+        error: "email, password, first_name and last_name are required"
+      });
+    }
+
+    if (password.length < 12) {
+      return res.status(400).json({
+        success: false,
+        error: "Password must be at least 12 characters"
+      });
+    }
+
+    const organizationResult = await pool.query(
+      `
+      SELECT id, name
+      FROM organizations
+      WHERE slug = 'bootbros'
+      LIMIT 1
+      `
+    );
+
+    if (organizationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "BootBros organization not found"
+      });
+    }
+
+    const organization = organizationResult.rows[0];
+
+    const existingAdmin = await pool.query(
+      `
+      SELECT id, email
+      FROM users
+      WHERE organization_id = $1
+        AND role = 'organization_admin'
+      LIMIT 1
+      `,
+      [organization.id]
+    );
+
+    if (existingAdmin.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: "BootBros administrator already exists"
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const result = await pool.query(
+      `
+      INSERT INTO users (
+        organization_id,
+        email,
+        password_hash,
+        first_name,
+        last_name,
+        role
+      )
+      VALUES ($1, $2, $3, $4, $5, 'organization_admin')
+      RETURNING
+        id,
+        organization_id,
+        email,
+        first_name,
+        last_name,
+        role,
+        active,
+        created_at
+      `,
+      [
+        organization.id,
+        email.trim().toLowerCase(),
+        passwordHash,
+        first_name.trim(),
+        last_name.trim()
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      user: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Admin setup failed:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Could not create administrator"
     });
   }
 });
