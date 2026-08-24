@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BootBros | Confirm Boot</title>
+
+  <link rel="stylesheet" href="/app.css">
+
+  <style>
+    .page {
+      min-height: 100vh;
+      background: #f5f7fa;
+    }
+
+    .header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: #fff;
+      border-bottom: 1px solid #e5e9ef;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #071b35;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1557b0;
+      color: #fff;
+      border-radius: 10px;
+    }
+
+    .back {
+      color: #344054;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .main {
+      max-width: 850px;
+      margin: auto;
+      padding: 40px 20px 60px;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      color: #071b35;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      color: #667085;
+    }
+
+    .card {
+      margin-bottom: 20px;
+      padding: 26px;
+      background: #fff;
+      border: 1px solid #e1e7ef;
+      border-radius: 14px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #071b35;
+      font-size: 18px;
+    }
+
+    .summary {
+      display: grid;
+      gap: 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 13px 0;
+      border-bottom: 1px solid #eaecf0;
+    }
+
+    .summary-row:last-child {
+      border-bottom: 0;
+    }
+
+    .summary-label {
+      color: #667085;
+    }
+
+    .summary-value {
+      color: #101828;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: #ecfdf3;
+      color: #027a48;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .warning {
+      padding: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #fedf89;
+      background: #fffaeb;
+      color: #92400e;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .evidence-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .evidence-item {
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      color: #344054;
+      font-size: 14px;
+    }
+
+    .confirm-box {
+      text-align: center;
+      padding: 28px;
+      background: #071b35;
+      color: white;
+      border-radius: 14px;
+    }
+
+    .confirm-box h2 {
+      color: white;
+      margin-top: 0;
+    }
+
+    .confirm-box p {
+      color: #d0d5dd;
+      line-height: 1.5;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 20px auto;
+      max-width: 650px;
+      text-align: left;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+    }
+
+    .button {
+      width: 100%;
+      max-width: 500px;
+      padding: 15px 22px;
+      border: 0;
+      border-radius: 8px;
+      background: #16a34a;
+      color: white;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 8px;
+      background: #fef3f2;
+      color: #b42318;
+    }
+
+    .success {
+      display: none;
+      text-align: center;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #dcfae6;
+      color: #067647;
+      border-radius: 50%;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .success h1 {
+      color: #071b35;
+    }
+
+    .success-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 13px 22px;
+      border-radius: 8px;
+      background: #1557b0;
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    @media (max-width: 650px) {
+      .summary-row {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .summary-value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <header class="header">
+
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      BootBros
+    </div>
+
+    <a
+      href="/boot-information.html"
+      class="back"
+    >
+      ← Back
+    </a>
+
+  </header>
+
+
+  <main class="main">
+
+    <div id="review">
+
+      <h1>Confirm Boot Installation</h1>
+
+      <div class="subtitle">
+        Review all information carefully before confirming.
+      </div>
+
+
+      <div class="warning">
+        <strong>Important:</strong>
+        Confirm that the vehicle, violation, boot,
+        location, and evidence information is correct.
+        Once confirmed, this boot installation will be
+        recorded in the BootBros system.
+      </div>
+
+
+      <section class="card">
+
+        <h2>Vehicle</h2>
+
+        <div class="summary">
+
+          <div class="summary-row">
+            <span class="summary-label">
+              License Plate
+            </span>
+
+            <span
+              id="plate"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              State
+            </span>
+
+            <span
+              id="state"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Vehicle
+            </span>
+
+            <span
+              id="vehicle"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Color
+            </span>
+
+            <span
+              id="color"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Current Status
+            </span>
+
+            <span
+              id="vehicle-status"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h2>Enforcement Reason</h2>
+
+        <div class="summary">
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Approved Reason
+            </span>
+
+            <span
+              id="reason"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Supporting Citations
+            </span>
+
+            <span
+              id="citations"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Amount Due
+            </span>
+
+            <span
+              id="amount"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h2>Boot Information</h2>
+
+        <div class="summary">
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Boot ID
+            </span>
+
+            <span
+              id="boot-id"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Boot Type
+            </span>
+
+            <span
+              id="boot-type"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Wheel Position
+            </span>
+
+            <span
+              id="wheel-position"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Installation Time
+            </span>
+
+            <span
+              id="installed-at"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Technician
+            </span>
+
+            <span
+              id="technician"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h2>Location & Evidence</h2>
+
+        <div class="summary">
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Latitude
+            </span>
+
+            <span
+              id="latitude"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Longitude
+            </span>
+
+            <span
+              id="longitude"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+        </div>
+
+        <br>
+
+        <div
+          id="evidence-list"
+          class="evidence-list"
+        ></div>
+
+      </section>
+
+
+      <div class="confirm-box">
+
+        <h2>Technician Confirmation</h2>
+
+        <p>
+          By confirming, you certify that the information
+          above has been reviewed and that the boot was
+          installed according to your organization's
+          approved enforcement procedures.
+        </p>
+
+
+        <label class="checkbox-row">
+
+          <input
+            id="confirm-check"
+            type="checkbox"
+          >
+
+          <span>
+            I have verified the vehicle, enforcement
+            reason, boot/device information, location,
+            and required evidence.
+          </span>
+
+        </label>
+
+
+        <button
+          id="confirm-button"
+          class="button"
+          disabled
+        >
+          Confirm Boot Installed
+        </button>
+
+
+        <div
+          id="message"
+          class="message"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="success"
+      class="success"
+    >
+
+      <div class="success-icon">
+        ✓
+      </div>
+
+      <h1>Boot Installed</h1>
+
+      <p>
+        The boot installation has been recorded
+        successfully.
+      </p>
+
+      <div class="card">
+
+        <div class="summary">
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Boot ID
+            </span>
+
+            <span
+              id="success-boot-id"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              License Plate
+            </span>
+
+            <span
+              id="success-plate"
+              class="summary-value"
+            >
+              —
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Status
+            </span>
+
+            <span class="status">
+              BOOTED
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <a
+        href="/dashboard.html"
+        class="success-button"
+      >
+        Return to Dashboard
+      </a>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  const token =
+    sessionStorage.getItem("bootbros_token");
+
+  const vehicleJson =
+    sessionStorage.getItem("boot_vehicle");
+
+  const reasonJson =
+    sessionStorage.getItem("boot_reason");
+
+  const verificationJson =
+    sessionStorage.getItem("boot_verification");
+
+  const evidenceJson =
+    sessionStorage.getItem("boot_evidence");
+
+  const bootInfoJson =
+    sessionStorage.getItem("boot_information");
+
+
+  if (
+    !token ||
+    !vehicleJson ||
+    !reasonJson ||
+    !verificationJson ||
+    !evidenceJson ||
+    !bootInfoJson
+  ) {
+    window.location.href =
+      "/new-boot.html";
+  }
+
+
+  const vehicleData =
+    JSON.parse(vehicleJson);
+
+  const vehicle =
+    vehicleData.vehicle;
+
+  const reason =
+    JSON.parse(reasonJson);
+
+  const verification =
+    JSON.parse(verificationJson);
+
+  const evidence =
+    JSON.parse(evidenceJson);
+
+  const bootInfo =
+    JSON.parse(bootInfoJson);
+
+
+  document.getElementById("plate")
+    .textContent =
+    vehicle.license_plate || "—";
+
+
+  document.getElementById("state")
+    .textContent =
+    vehicle.state || "—";
+
+
+  document.getElementById("vehicle")
+    .textContent =
+    `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "—";
+
+
+  document.getElementById("color")
+    .textContent =
+    vehicle.color || "—";
+
+
+  document.getElementById("vehicle-status")
+    .textContent =
+    vehicleData.boot?.status?.toUpperCase() || "NOT BOOTED";
+
+
+  document.getElementById("reason")
+    .textContent =
+    reason.reason || "—";
+
+
+  document.getElementById("citations")
+    .textContent =
+    reason.citations || "None provided";
+
+
+  const amount =
+    vehicleData.violation?.amount_due;
+
+
+  document.getElementById("amount")
+    .textContent =
+    amount !== undefined && amount !== null
+      ? `$${Number(amount).toFixed(2)}`
+      : "—";
+
+
+  document.getElementById("boot-id")
+    .textContent =
+    bootInfo.boot_id;
+
+
+  document.getElementById("boot-type")
+    .textContent =
+    bootInfo.boot_type;
+
+
+  document.getElementById("wheel-position")
+    .textContent =
+    bootInfo.wheel_position
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, c => c.toUpperCase());
+
+
+  document.getElementById("installed-at")
+    .textContent =
+    new Date(
+      bootInfo.installed_at
+    ).toLocaleString();
+
+
+  document.getElementById("technician")
+    .textContent =
+    bootInfo.technician;
+
+
+  document.getElementById("latitude")
+    .textContent =
+    bootInfo.latitude || "—";
+
+
+  document.getElementById("longitude")
+    .textContent =
+    bootInfo.longitude || "—";
+
+
+  /*
+   * Evidence list
+   */
+
+  const evidenceList =
+    document.getElementById(
+      "evidence-list"
+    );
+
+
+  const evidenceItems = [
+    ["Front vehicle photo", evidence.front],
+    ["Rear / license plate photo", evidence.rear],
+    ["Overall position photo", evidence.overall],
+    ["Boot installed photo", evidence.boot],
+    ["Boot / wheel close-up", evidence.closeup],
+    ["Parking / signage photo", evidence.signage]
+  ];
+
+
+  evidenceItems.forEach(
+    ([label, value]) => {
+
+      if (!value) return;
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "evidence-item";
+
+      item.textContent =
+        `✓ ${label}`;
+
+      evidenceList.appendChild(item);
+
+    }
+  );
+
+
+  /*
+   * Confirmation checkbox
+   */
+
+  const checkbox =
+    document.getElementById(
+      "confirm-check"
+    );
+
+  const button =
+    document.getElementById(
+      "confirm-button"
+    );
+
+
+  checkbox.addEventListener(
+    "change",
+    () => {
+
+      button.disabled =
+        !checkbox.checked;
+
+    }
+  );
+
+
+  /*
+   * IMPORTANT:
+   *
+   * For this first UI test we save the
+   * confirmation locally.
+   *
+   * Next step will replace this with
+   * the authenticated backend endpoint.
+   */
+
+  button.addEventListener(
+    "click",
+    async () => {
+
+      if (!checkbox.checked) {
+        return;
+      }
+
+
+      button.disabled = true;
+
+      button.textContent =
+        "Recording Boot...";
+
+
+      try {
+
+        /*
+         * Temporary local confirmation.
+         *
+         * We will connect this to the
+         * backend in the next step.
+         */
+
+        const confirmation = {
+
+          confirmed: true,
+
+          confirmed_at:
+            new Date().toISOString(),
+
+          boot_id:
+            bootInfo.boot_id,
+
+          license_plate:
+            vehicle.license_plate,
+
+          technician:
+            bootInfo.technician
+
+        };
+
+
+        sessionStorage.setItem(
+          "boot_confirmation",
+          JSON.stringify(
+            confirmation
+          )
+        );
+
+
+        document.getElementById(
+          "review"
+        ).style.display =
+          "none";
+
+
+        document.getElementById(
+          "success"
+        ).style.display =
+          "block";
+
+
+        document.getElementById(
+          "success-boot-id"
+        ).textContent =
+          bootInfo.boot_id;
+
+
+        document.getElementById(
+          "success-plate"
+        ).textContent =
+          vehicle.license_plate;
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        const message =
+          document.getElementById(
+            "message"
+          );
+
+        message.textContent =
+          "Could not record the boot. Please try again.";
+
+        message.style.display =
+          "block";
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          "Confirm Boot Installed";
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
