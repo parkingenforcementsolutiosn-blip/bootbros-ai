@@ -581,6 +581,99 @@ app.patch("/api/removal-requests/:id/status", async (req, res) => {
   }
 });
 
+app.get("/api/removal-status/:plate", async (req, res) => {
+  try {
+    const plate = req.params.plate.trim().toUpperCase();
+
+    const result = await pool.query(
+      `
+      SELECT
+        rr.id AS removal_request_id,
+        rr.status AS removal_status,
+        rr.payment_method,
+        rr.payment_status,
+        rr.requested_at,
+        rr.completed_at,
+
+        v.license_plate,
+        v.make,
+        v.model,
+        v.color,
+
+        b.status AS boot_status,
+        b.location AS boot_location,
+
+        o.name AS organization_name
+
+      FROM removal_requests rr
+
+      JOIN vehicles v
+        ON v.id = rr.vehicle_id
+
+      JOIN organizations o
+        ON o.id = rr.organization_id
+
+      LEFT JOIN boots b
+        ON b.id = rr.boot_id
+
+      WHERE v.license_plate = $1
+
+      ORDER BY rr.requested_at DESC
+
+      LIMIT 1
+      `,
+      [plate]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        found: false,
+        message: "No removal request found for that license plate."
+      });
+    }
+
+    const record = result.rows[0];
+
+    res.json({
+      found: true,
+
+      vehicle: {
+        license_plate: record.license_plate,
+        make: record.make,
+        model: record.model,
+        color: record.color
+      },
+
+      removal: {
+        id: record.removal_request_id,
+        status: record.removal_status,
+        requested_at: record.requested_at,
+        completed_at: record.completed_at
+      },
+
+      payment: {
+        method: record.payment_method,
+        status: record.payment_status
+      },
+
+      boot: {
+        status: record.boot_status,
+        location: record.boot_location
+      },
+
+      organization: record.organization_name
+    });
+
+  } catch (error) {
+    console.error("Removal status lookup failed:", error);
+
+    res.status(500).json({
+      found: false,
+      error: "Could not retrieve removal status"
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
