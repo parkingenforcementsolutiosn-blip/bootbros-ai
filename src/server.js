@@ -8,6 +8,7 @@ const { Pool } = pg;
 const app = express();
 
 app.use(express.json());
+app.use(express.static("public"));
 
 const PORT = process.env.PORT || 10000;
 
