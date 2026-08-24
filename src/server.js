@@ -165,6 +165,65 @@ ALTER TABLE boots
 ALTER TABLE boots
   ADD COLUMN IF NOT EXISTS longitude NUMERIC(10,7);
 
+  CREATE TABLE IF NOT EXISTS boot_reasons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  code VARCHAR(100) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  UNIQUE(organization_id, code)
+);
+
+CREATE TABLE IF NOT EXISTS boot_citations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  boot_id UUID NOT NULL REFERENCES boots(id) ON DELETE CASCADE,
+  violation_id UUID REFERENCES violations(id),
+  citation_number VARCHAR(100),
+  amount_due NUMERIC(10,2),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_boot_reasons_org
+  ON boot_reasons(organization_id);
+
+CREATE INDEX IF NOT EXISTS idx_boot_citations_boot
+  ON boot_citations(boot_id);
+
+CREATE INDEX IF NOT EXISTS idx_boot_evidence_boot
+  ON boot_evidence(boot_id);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_org
+  ON audit_logs(organization_id);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity
+  ON audit_logs(entity_type, entity_id);
+
+CREATE TABLE IF NOT EXISTS boot_evidence (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  boot_id UUID NOT NULL REFERENCES boots(id) ON DELETE CASCADE,
+  evidence_type VARCHAR(100) NOT NULL,
+  file_url TEXT,
+  latitude NUMERIC(10,7),
+  longitude NUMERIC(10,7),
+  captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  user_id UUID REFERENCES users(id),
+  technician_id UUID REFERENCES technicians(id),
+  action VARCHAR(100) NOT NULL,
+  entity_type VARCHAR(100) NOT NULL,
+  entity_id UUID,
+  details JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
       CREATE TABLE IF NOT EXISTS boot_reasons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id),
